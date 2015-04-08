@@ -15,11 +15,10 @@ using std::endl;
 #endif  // H5_NO_STD
 #endif
 
-int CreateDataSet()
+int CreateDataSet(const char *FILE_NAME,const char *DATASET_NAME)
 {
 	//const H5std_string	FILE_NAME("h5_dset.h5");
-	const char *FILE_NAME = "h5_dset.h5";
-	const H5std_string	DATASET_NAME("dset");
+	//const H5std_string	DATASET_NAME("dset");
 	const int	 NX = 4;                     // dataset dimensions
 	const int	 NY = 6;
 	const int	 RANK = 2;
@@ -53,9 +52,9 @@ int CreateDataSet()
 	return ret;
 }
 
-int CreateGroup()
+int CreateGroup(const char *FILE_NAME,const char* GROUPNAME)
 {
-	const H5std_string FILE_NAME("h5_dset.h5");
+	//const H5std_string FILE_NAME("h5_dset.h5");
 	// Try block to detect exceptions raised by any of the calls inside it
 	try
 	{
@@ -67,7 +66,7 @@ int CreateGroup()
 		H5File file(FILE_NAME, H5F_ACC_TRUNC);
 
 		// Create a group named "/MygGroup" in the file
-		Group group(file.createGroup("/MyGroup"));
+		Group group(file.createGroup(GROUPNAME));
 
 		// File and group will be closed as their instances go out of scope.
 
@@ -91,11 +90,12 @@ int CreateGroup()
 
 /*
 * Create groups in a file using absolute and relative paths
+# gp is the reference group name
 */
-int CreateGroupPar()
+int CreateGroupPar(const char *FILE_NAME,Group gp, const char* GROUPNAME)
 {
 
-	const H5std_string FILE_NAME("h5tutr_groups.h5");
+	//const H5std_string FILE_NAME("h5tutr_groups.h5");
 	// Try block to detect exceptions raised by any of the calls inside it
 	try
 	{
@@ -696,6 +696,9 @@ int CreateChunk()
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	CreateGroup();
+	//CreateDataSet()
+	CreateGroup("dbL2.h5","/SH_L2_index");
+	CreateGroup("dbL2.h5", "/SH_L2_market_data");
+	CreateGroup("dbL2.h5", "/SH_L2_transaction");
 	return 0;
 }
