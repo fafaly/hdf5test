@@ -1,23 +1,14 @@
 #include "stdafx.h"
 #include "hdf5func.h"
-#include <string>
-#include <iostream>
-#include "H5Cpp.h"
 
-#ifndef H5_NO_NAMESPACE
-using namespace H5;
-using namespace std;
-#ifndef H5_NO_STD
-using std::cout;
-using std::endl;
-#endif  // H5_NO_STD
-#endif
 
-int CreateDataSet()
+
+
+int CreateDataSet(const char *FILE_NAME, const char* DATASET_NAME)
 {
 	//const H5std_string	FILE_NAME("h5_dset.h5");
-	const char *FILE_NAME = "h5_dset.h5";
-	const H5std_string	DATASET_NAME("dset");
+	
+	//const H5std_string	DATASET_NAME("dset");
 	const int	 NX = 4;                     // dataset dimensions
 	const int	 NY = 6;
 	const int	 RANK = 2;
@@ -26,7 +17,7 @@ int CreateDataSet()
 	try
 	{
 		Exception::dontPrint();
-		H5File file(FILE_NAME, H5F_ACC_TRUNC);
+		H5File file(FILE_NAME, H5F_ACC_RDWR);
 		hsize_t dims[2];
 		dims[0] = NX;
 		dims[1] = NY;
@@ -51,9 +42,9 @@ int CreateDataSet()
 	return ret;
 }
 
-int CreateGroup()
+int CreateGroup(const char * FILE_NAME, const char* groupname)
 {
-	const H5std_string FILE_NAME("h5_dset.h5");
+	//const H5std_string FILE_NAME("h5_dset.h5");
 	// Try block to detect exceptions raised by any of the calls inside it
 	try
 	{
@@ -62,10 +53,10 @@ int CreateGroup()
 		Exception::dontPrint();
 
 		// Create a new file using default property lists.
-		H5File file(FILE_NAME, H5F_ACC_TRUNC);
+		H5File file(FILE_NAME, H5F_ACC_RDWR);
 
 		// Create a group named "/MygGroup" in the file
-		Group group(file.createGroup("/MyGroup"));
+		Group group(file.createGroup(groupname));
 
 		// File and group will be closed as their instances go out of scope.
 
@@ -93,11 +84,10 @@ int CreateGroup()
 int CreateGroupPar()
 {
 
-	const H5std_string FILE_NAME("h5tutr_groups.h5");
+	const char*	 FILE_NAME("cfL2.h5");
 	// Try block to detect exceptions raised by any of the calls inside it
 	try
 	{
-
 		// Turn off the auto-printing when failure occurs so that we can
 		// handle the errors appropriately.
 
@@ -109,8 +99,7 @@ int CreateGroupPar()
 
 		// Create group "MyGroup" in the root group using an absolute name.
 
-		Group group1(file.createGroup("/MyGroup"));
-
+		Group group1(file.createGroup("/SH_L2_market_data"));
 		// Create group "Group_A" in group "MyGroup" using an
 		// absolute name.
 
@@ -147,20 +136,19 @@ int CreateGroupPar()
 	return 0;
 }
 
-int WriteData()
+int WriteData(const char* FILE_NAME, const char*	DATASET_NAME)
 {
-	const H5std_string	FILE_NAME("h5tutr_dset.h5");
-	const H5std_string	DATASET_NAME("dset");
 	const int 	DIM0 = 4;	               // dataset dimensions
 	const int 	DIM1 = 6;
 	// Data initialization.
 
 	int i, j;
-	int data[DIM0][DIM1];	    // buffer for data to write
+	//int data[DIM0][DIM1];	    // buffer for data to write
 
-	for (j = 0; j < DIM0; j++)
-	for (i = 0; i < DIM1; i++)
-		data[j][i] = i * 6 + j + 1;
+	//for (j = 0; j < DIM0; j++)
+	//for (i = 0; i < DIM1; i++)
+	//	data[j][i] = i * 6 + j + 1;
+	int data[10] = {1,2,3,3,4,5,6,7,89,6};
 
 	// Try block to detect exceptions raised by any of the calls inside it
 	try
@@ -266,7 +254,7 @@ int CreateAttribute()
 */
 int SubSet()
 {
-	const H5std_string	FILE_NAME("h5tutr_subset.h5");
+	const char*	FILE_NAME("h5tutr_subset.h5");
 	const H5std_string	DATASET_NAME("IntArray");
 
 	const int     RANK = 2;
