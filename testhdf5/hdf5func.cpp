@@ -3,7 +3,6 @@
 
 
 
-
 int CreateDataSet(const char *FILE_NAME, const char* DATASET_NAME)
 {
 	//const H5std_string	FILE_NAME("h5_dset.h5");
@@ -57,6 +56,7 @@ int CreateGroup(const char * FILE_NAME, const char* groupname)
 
 		// Create a group named "/MygGroup" in the file
 		Group group(file.createGroup(groupname));
+
 
 		// File and group will be closed as their instances go out of scope.
 
@@ -136,34 +136,115 @@ int CreateGroupPar()
 	return 0;
 }
 
+
 int WriteData(const char* FILE_NAME, const char*	DATASET_NAME)
 {
-	const int 	DIM0 = 4;	               // dataset dimensions
-	const int 	DIM1 = 6;
-	// Data initialization.
 
-	int i, j;
-	//int data[DIM0][DIM1];	    // buffer for data to write
-
-	//for (j = 0; j < DIM0; j++)
-	//for (i = 0; i < DIM1; i++)
-	//	data[j][i] = i * 6 + j + 1;
-	int data[10] = {1,2,3,3,4,5,6,7,89,6};
-
+	Market_Data md;
+	md.dte = 20140105;
+	md.tme = 43334422;
+	md.pclse=460000;//
+	md.opn=441100;//
+	md.high=480000;
+	md.low=410000;
+	md.lastPx=420000;
+	md.volume=421421214;
+	md.value=142421442;
+	md.tcount=2354;
+	memset(md.ask, 0, sizeof(md.ask));
+	memset(md.asize, 0, sizeof(md.asize));
+	memset(md.bid, 0, sizeof(md.bid));
+	memset(md.bsize, 0, sizeof(md.bsize));
+	md.ask[0] = 320000;
 	// Try block to detect exceptions raised by any of the calls inside it
 	try
 	{
 		// Turn off the auto-printing when failure occurs so that we can
 		// handle the errors appropriately
 		Exception::dontPrint();
+		CompType mtype(sizeof(Market_Data));
+		mtype.insertMember(MEMBER1, HOFFSET(Market_Data, dte), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER2, HOFFSET(Market_Data, tme), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER3, HOFFSET(Market_Data, pclse), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER4, HOFFSET(Market_Data, opn), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER5, HOFFSET(Market_Data, high), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER6, HOFFSET(Market_Data, low), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER7, HOFFSET(Market_Data, lastPx), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER8, HOFFSET(Market_Data, volume), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER9, HOFFSET(Market_Data, value), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER10,HOFFSET(Market_Data, tcount), PredType::NATIVE_INT);
 
-		// Open an existing file and dataset.
-		H5File file(FILE_NAME, H5F_ACC_RDWR);
-		DataSet dataset = file.openDataSet(DATASET_NAME);
+		mtype.insertMember(MEMBER11, HOFFSET(Market_Data, ask[1]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER12, HOFFSET(Market_Data, ask[2]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER13, HOFFSET(Market_Data, ask[3]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER14, HOFFSET(Market_Data, ask[4]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER15, HOFFSET(Market_Data, ask[5]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER16, HOFFSET(Market_Data, ask[6]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER17, HOFFSET(Market_Data, ask[7]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER18, HOFFSET(Market_Data, ask[8]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER19, HOFFSET(Market_Data, ask[9]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER20, HOFFSET(Market_Data, ask[10]), PredType::NATIVE_INT);
 
-		// Write the data to the dataset using default memory space, file
-		// space, and transfer properties.
-		dataset.write(data, PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER21, HOFFSET(Market_Data, asize[1]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER22, HOFFSET(Market_Data, asize[2]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER23, HOFFSET(Market_Data, asize[3]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER24, HOFFSET(Market_Data, asize[4]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER25, HOFFSET(Market_Data, asize[5]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER26, HOFFSET(Market_Data, asize[6]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER27, HOFFSET(Market_Data, asize[7]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER28, HOFFSET(Market_Data, asize[8]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER29, HOFFSET(Market_Data, asize[9]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER30, HOFFSET(Market_Data, asize[10]), PredType::NATIVE_UINT);
+
+		mtype.insertMember(MEMBER31, HOFFSET(Market_Data, bid[1]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER32, HOFFSET(Market_Data, bid[2]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER33, HOFFSET(Market_Data, bid[3]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER34, HOFFSET(Market_Data, bid[4]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER35, HOFFSET(Market_Data, bid[5]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER36, HOFFSET(Market_Data, bid[6]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER37, HOFFSET(Market_Data, bid[7]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER38, HOFFSET(Market_Data, bid[8]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER39, HOFFSET(Market_Data, bid[9]), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER40, HOFFSET(Market_Data, bid[10]), PredType::NATIVE_INT);
+
+		mtype.insertMember(MEMBER41, HOFFSET(Market_Data, bsize[1]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER42, HOFFSET(Market_Data, bsize[2]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER43, HOFFSET(Market_Data, bsize[3]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER44, HOFFSET(Market_Data, bsize[4]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER45, HOFFSET(Market_Data, bsize[5]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER46, HOFFSET(Market_Data, bsize[6]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER47, HOFFSET(Market_Data, bsize[7]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER48, HOFFSET(Market_Data, bsize[8]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER49, HOFFSET(Market_Data, bsize[9]), PredType::NATIVE_UINT);
+		mtype.insertMember(MEMBER50, HOFFSET(Market_Data, bsize[10]), PredType::NATIVE_UINT);
+
+		const int rank = 1;
+		hsize_t  dim[] = { 2 };
+		DataSpace space(rank, dim);
+		/*
+		* Create the dataset.
+		*/
+		H5File* file = new H5File(FILE_NAME, H5F_ACC_RDWR);
+		DataSet* dataset;
+		//dataset = new DataSet(file->createDataSet(DATASET_NAME,mtype,space));
+		dataset = new DataSet(file->openDataSet(DATASET_NAME));
+		/*
+		* Write data to the dataset;
+		*/
+		dataset->write(&md, mtype);
+		/*
+		* Release resources
+		*/
+		delete dataset;
+		delete file;
+
+		//// Open an existing file and dataset.
+		//H5File file(FILE_NAME, H5F_ACC_RDWR);
+		////DataSet dataset = file.openDataSet(DATASET_NAME);
+		//dataset = new DataSet(file->openDataSet(DATASET_NAME));
+		//// Write the data to the dataset using default memory space, file
+		//// space, and transfer properties.
+		//dataset.write(data, PredType::NATIVE_INT);
 
 	}  // end of try block
 
@@ -287,7 +368,6 @@ int SubSet()
 
 		DataSet dataset(file.createDataSet(DATASET_NAME,
 			PredType::STD_I32BE, dataspace));
-
 
 		for (j = 0; j < DIM0; j++) {
 			for (i = 0; i < DIM1; i++)
@@ -679,3 +759,4 @@ int CreateChunk()
 
 	return 0;  // successfully terminated
 }
+
