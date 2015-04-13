@@ -1,44 +1,29 @@
 #include "stdafx.h"
 #include "hdf5func.h"
 
+const int RANK = 1;
 
+void AppendComData(H5::DataSet &dataset, Market_Data &value,DataType &mtype) {
+	// dataspace
+	hsize_t dims[RANK] = { 1 };
+	hsize_t maxdims[RANK] = { H5S_UNLIMITED };
+	H5::DataSpace mspace(RANK, dims, maxdims);
 
-int CreateDataSet(const char *FILE_NAME, const char* DATASET_NAME)
-{
-	//const H5std_string	FILE_NAME("h5_dset.h5");
-	
-	//const H5std_string	DATASET_NAME("dset");
-	const int	 NX = 4;                     // dataset dimensions
-	const int	 NY = 6;
-	const int	 RANK = 2;
+	H5::DataSpace space = dataset.getSpace();
+	const hsize_t actual_dim = space.getSimpleExtentNpoints();
 
-	int ret = 0;
-	try
-	{
-		Exception::dontPrint();
-		H5File file(FILE_NAME, H5F_ACC_RDWR);
-		hsize_t dims[2];
-		dims[0] = NX;
-		dims[1] = NY;
-		DataSpace dataspace(RANK, dims);
-		DataSet dataset = file.createDataSet(DATASET_NAME, PredType::STD_B32BE, dataspace);
-	}
-	catch (FileIException error)
-	{
-		error.printError();
-		ret = -1;
-	}
-	catch (DataSetIException error)
-	{
-		error.printError();
-		ret = -1;
-	}
-	catch (DataSpaceIException error)
-	{
-		error.printError();
-		ret = -1;
-	}
-	return ret;
+	// extend the dataset
+	hsize_t new_size[RANK];
+	new_size[0] = actual_dim + 1;
+	dataset.extend(new_size);
+
+	// select hyperslab.
+	H5::DataSpace fspace = dataset.getSpace();
+	hsize_t offset[RANK] = { actual_dim };
+	hsize_t dims1[RANK] = { 1 };
+	fspace.selectHyperslab(H5S_SELECT_SET, dims1, offset);
+
+	dataset.write(&value, mtype, mspace, fspace);
 }
 
 int CreateGroup(const char * FILE_NAME, const char* groupname)
@@ -136,32 +121,48 @@ int CreateGroupPar()
 	return 0;
 }
 
+void ReadDataSet(DataSet &dataset,DataType &mtype)
+{
+	/*
+	* Read field b from s1 dataset. Field in the file is found by its name.
+	*/
+	Market_Data md2[3];  // Third "structure" - used to read float field of s1
+	dataset.read(&md2, mtype);
+	/*
+	* Display the field
+	*/
+	cout << endl << "Field market data : " << endl;
+	for (int i = 0; i <6; i++)
+		cout << md2[i].dte << endl;
+	cout << endl;
+}
 
-int WriteData(const char* FILE_NAME, const char*	DATASET_NAME)
+
+int CreateDataSet(const char *FILE_NAME, const char* DATASET_NAME)
 {
 
+	int ret = 0;
 	Market_Data md;
-	md.dte = 20140105;
+	md.dte = 20140114;
 	md.tme = 43334422;
-	md.pclse=460000;//
-	md.opn=441100;//
-	md.high=480000;
-	md.low=410000;
-	md.lastPx=420000;
-	md.volume=421421214;
-	md.value=142421442;
-	md.tcount=2354;
+	md.pclse = 460000;//
+	md.opn = 441100;//
+	md.high = 480000;
+	md.low = 410000;
+	md.lastPx = 420000;
+	md.volume = 421421214;
+	md.value = 142421442;
+	md.tcount = 2354;
 	memset(md.ask, 0, sizeof(md.ask));
 	memset(md.asize, 0, sizeof(md.asize));
 	memset(md.bid, 0, sizeof(md.bid));
 	memset(md.bsize, 0, sizeof(md.bsize));
 	md.ask[0] = 320000;
-	// Try block to detect exceptions raised by any of the calls inside it
 	try
 	{
 		// Turn off the auto-printing when failure occurs so that we can
 		// handle the errors appropriately
-		Exception::dontPrint();
+		//Exception::dontPrint();
 		CompType mtype(sizeof(Market_Data));
 		mtype.insertMember(MEMBER1, HOFFSET(Market_Data, dte), PredType::NATIVE_INT);
 		mtype.insertMember(MEMBER2, HOFFSET(Market_Data, tme), PredType::NATIVE_INT);
@@ -170,9 +171,9 @@ int WriteData(const char* FILE_NAME, const char*	DATASET_NAME)
 		mtype.insertMember(MEMBER5, HOFFSET(Market_Data, high), PredType::NATIVE_INT);
 		mtype.insertMember(MEMBER6, HOFFSET(Market_Data, low), PredType::NATIVE_INT);
 		mtype.insertMember(MEMBER7, HOFFSET(Market_Data, lastPx), PredType::NATIVE_INT);
-		mtype.insertMember(MEMBER8, HOFFSET(Market_Data, volume), PredType::NATIVE_INT);
-		mtype.insertMember(MEMBER9, HOFFSET(Market_Data, value), PredType::NATIVE_INT);
-		mtype.insertMember(MEMBER10,HOFFSET(Market_Data, tcount), PredType::NATIVE_INT);
+		mtype.insertMember(MEMBER8, HOFFSET(Market_Data, volume), PredType::NATIVE_B64);
+		mtype.insertMember(MEMBER9, HOFFSET(Market_Data, value), PredType::NATIVE_B64);
+		mtype.insertMember(MEMBER10, HOFFSET(Market_Data, tcount), PredType::NATIVE_INT);
 
 		mtype.insertMember(MEMBER11, HOFFSET(Market_Data, ask[1]), PredType::NATIVE_INT);
 		mtype.insertMember(MEMBER12, HOFFSET(Market_Data, ask[2]), PredType::NATIVE_INT);
@@ -218,32 +219,109 @@ int WriteData(const char* FILE_NAME, const char*	DATASET_NAME)
 		mtype.insertMember(MEMBER49, HOFFSET(Market_Data, bsize[9]), PredType::NATIVE_UINT);
 		mtype.insertMember(MEMBER50, HOFFSET(Market_Data, bsize[10]), PredType::NATIVE_UINT);
 
-		const int rank = 1;
-		hsize_t  dim[] = { 2 };
-		DataSpace space(rank, dim);
-		/*
-		* Create the dataset.
-		*/
+		// create dataset for doubles:
 		H5File* file = new H5File(FILE_NAME, H5F_ACC_RDWR);
-		DataSet* dataset;
-		//dataset = new DataSet(file->createDataSet(DATASET_NAME,mtype,space));
-		dataset = new DataSet(file->openDataSet(DATASET_NAME));
-		/*
-		* Write data to the dataset;
-		*/
-		dataset->write(&md, mtype);
+		hsize_t  dim[RANK] = { 0 };
+		hsize_t   maxdims[RANK] = { H5S_UNLIMITED };
+		DataSpace space(RANK, dim, maxdims);
+		// enable chunking for this dataset
+		H5::DSetCreatPropList cparms;
+		hsize_t chunk_dims[RANK] = { 1 };
+		cparms.setChunk(RANK, chunk_dims);
+		DataSet dataset = file->createDataSet(DATASET_NAME, mtype, space, cparms);
+
+		//AppendComData(dataset, md, mtype);
+
+		//ReadDataSet(dataset, mtype);
+
+	}
+	catch (FileIException error)
+	{
+		error.printError();
+		ret = -1;
+	}
+	catch (DataSetIException error)
+	{
+		error.printError();
+		ret = -1;
+	}
+	catch (DataSpaceIException error)
+	{
+		error.printError();
+		ret = -1;
+	}
+	return ret;
+}
+
+
+int WriteData(const char* FILE_NAME, const char* DATASET_NAME)
+{
+	Market_Data md;
+	md.dte = 20140118;
+	md.tme = 43334422;
+	md.pclse=460000;//
+	md.opn=441100;//
+	md.high=480000;
+	md.low=410000;
+	md.lastPx=420000;
+	md.volume=421421214;
+	md.value=142421442;
+	md.tcount=2354;
+	memset(md.ask, 0, sizeof(md.ask));
+	memset(md.asize, 0, sizeof(md.asize));
+	memset(md.bid, 0, sizeof(md.bid));
+	memset(md.bsize, 0, sizeof(md.bsize));
+	md.ask[0] = 320000;
+
+	// Try block to detect exceptions raised by any of the calls inside it
+	try
+	{
+
+		// update the file
+		H5File* file = new H5File(FILE_NAME, H5F_ACC_RDWR);
+		DataSet dataset = file->openDataSet(FILE_NAME);
+		CompType mtype(dataset);
+		AppendComData(dataset,md, mtype);
+	//	AppendComData(dataset, md, mtype);
+	//	AppendComData(dataset, md, mtype);
+		////DataSpace space(rank, dim);
+		///*
+		//* Create the dataset.
+		//*/
+		//H5File* file = new H5File(FILE_NAME, H5F_ACC_RDWR);
+		///*
+		//* Modify dataset creation properties, i.e. enable chunking.
+		//*/
+		///*DSetCreatPropList cparms;
+		//hsize_t      chunk_dims[1] = { 1 };
+		//cparms.setChunk(rank, chunk_dims);*/
+		///*
+		//* Set fill value for the dataset
+		//*/
+		//
+		////cparms.setFillValue(mtype, &md);
+		//const DataSet* dataset;
+		////dataset = new DataSet(file->createDataSet(DATASET_NAME,mtype,space));
+
+		//dataset = new DataSet(file->openDataSet(DATASET_NAME));
+		//CompType mtype(*dataset);
+		///*
+		//* Write data to the dataset;
+		//*/
+		////dataset->write(&md, mtype);
+
+		//hsize_t size[1] = {1 };
+		//dataset->extend(size);
+		//md.dte = 20111101;
+		//dataset->write(&md, mtype);
+
+
 		/*
 		* Release resources
 		*/
-		delete dataset;
+		//delete dataset;
 		delete file;
-
-		//// Open an existing file and dataset.
-		//H5File file(FILE_NAME, H5F_ACC_RDWR);
-		////DataSet dataset = file.openDataSet(DATASET_NAME);
-		//dataset = new DataSet(file->openDataSet(DATASET_NAME));
-		//// Write the data to the dataset using default memory space, file
-		//// space, and transfer properties.
+		ReadDataSet(dataset, mtype);
 		//dataset.write(data, PredType::NATIVE_INT);
 
 	}  // end of try block
